@@ -1,6 +1,7 @@
 import os
 import json
 import difflib
+from data_transformer.custom_exception import UnsupportedDataType
 
 class Config:
     def __init__(self):
@@ -44,13 +45,12 @@ class Config:
         if file_extension.lower() not in valid_extensions:
             # Find close matches using difflib
             close_matches = difflib.get_close_matches(file_extension.lower(), valid_extensions)
-            
-            # Display an error message with close matches
-            print(f"Error: Invalid file type for '{self.path}'. "
-                  f"Supported types are JSON, XML, and CSV. Close matches: {', '.join(close_matches)}")
-            
-            return False
 
+            # Display an error message with close matches
+            # print(f"Error: Invalid file type for '{self.path}'. "
+            #      f"Supported types are JSON, XML, and CSV. Close matches: {', '.join(close_matches)}")
+            raise UnsupportedDataType(file_extension)
+            return False
         return True
 
     def read_config(self):
@@ -76,7 +76,7 @@ class Config:
             if not self.is_valid_config():
                 return "Configuration not valid"  # If configuration is not valid return a message
             return config_data
-        
+
         # Prints an error message indicating a failure to read the configuration from the specified file,
         # including the specific exception details, and returns None to signal an unsuccessful read operation
         except Exception as e:
@@ -85,7 +85,9 @@ class Config:
 
     def get(self, property_name):
         """
-        Retrieves the value of a property.
+        Helps to check if property is present
+        and if it's present Retrieves the value of a property.
+        Else throws error
 
         Parameters:
             property_name (str): The name of the property to retrieve.
@@ -93,7 +95,11 @@ class Config:
         Returns:
             Any: The value of the specified property.
         """
-        return getattr(self, property_name, None)
+        attribute_value = getattr(self, property_name, None)
+        if attribute_value is None:
+            raise ValueError("{} is missing in config".format(property_name))
+        else:
+            return attribute_value
 
     def write_config(self):
         """
