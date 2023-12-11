@@ -109,9 +109,26 @@ class EntityCollection:
         - float or None: The mode of the values associated with the key, or None if no values are found.
         """
         values = self._get_values_for_key(key)
-        mode_values = mode(values).mode
-        mode_value = mode_values if mode_values is not list else mode_values[0]
-        return mode_value if values else None
+        if not values:
+            return None
+
+        # Count occurrences of each value
+        value_counts = {}
+        for value in values:
+            value_counts[value] = value_counts.get(value, 0) + 1
+
+        # Find the value(s) with the highest count
+        max_count = max(value_counts.values())
+
+        # If all values have a count of 1, return None (all unique values)
+        if max_count == 1:
+            return None
+
+        # Find the value(s) with the highest count
+        mode_values = [value for value, count in value_counts.items() if count == max_count]
+
+        # If there's a tie, return the list of mode values; otherwise, return the single mode value
+        return mode_values if len(mode_values) > 1 else mode_values[0]
 
     def compute_median(self, key):
         """
