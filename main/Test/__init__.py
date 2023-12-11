@@ -21,7 +21,9 @@ from Test.JsonParserTest import JsonParserTest
 from Test.XmlParserTest import XMLParserTest
 from Test.CSVParserTest import CSVParserTest
 from Test.DataManagerfactoryTest import DataManagerFactoryTest
-
+from Test.test_entity import TestEntity
+from Test.test_entity import TestEntityCollection
+from Test.test_configuration import TestConfig
 
 def my_suite():
     """
@@ -34,11 +36,10 @@ def my_suite():
     suite.addTest(unittest.makeSuite(XMLParserTest))
     suite.addTest(unittest.makeSuite(CSVParserTest))
     suite.addTest(unittest.makeSuite(DataManagerFactoryTest))
+    suite.addTest(unittest.makeSuite(TestEntity))
+    suite.addTest(unittest.makeSuite(TestEntityCollection))
+    suite.addTest(unittest.makeSuite(TestConfig))
     print(runner.run(suite))
 
 if __name__ == '__main__':
     my_suite()
-
-
-
-
