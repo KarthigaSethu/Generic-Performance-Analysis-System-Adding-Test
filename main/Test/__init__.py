@@ -1,79 +1,49 @@
+###############################################################################################
+# Over view on test directory files:
+# 1. AbstractParserTest/AbstractParserTest -  has setUpCls, setUp, test method(s),  tearDown, tearDownCls
+# 2. JsonParserTest/JsonParserTest - has setUpCls, setUp, test method(s),  tearDown, tearDownCls
+# 3. XMLParserTest/XMLParserTest - has setUpCls, setUp, test method(s),  tearDown, tearDownCls
+# 4. CSVParserTest./CSVParserTest - has setUpCls, setUp, test method(s),  tearDown, tearDownCls
+# 5. DataManagerFactoryTest/DataManagerFactoryTest - has setUpCls, setUp, test method(s),  tearDown, tearDownCls
+# 6. test_entity/TestEntity
+# 7. test_entity/TestEntityCollection
+# 8. my_suite() - Suite that co-ordinates all the test
+#############################################################################################
+
+import sys
+sys.path.append(r'.\main')
+sys.path.append(r'.\main\data_transformer')
+sys.path.append(r'.\main\data_processor')
+
 import unittest
-from data_transformer.abstract_parser import Parser
-from data_processor.configuration import Config
-from data_processor.entity import Entity
+from Test.AbstractParserTest import AbstractParserTest
+from Test.JsonParserTest import JsonParserTest
+from Test.XmlParserTest import XMLParserTest
+from Test.CSVParserTest import CSVParserTest
+from Test.DataManagerfactoryTest import DataManagerFactoryTest
+from Test.test_entity import TestEntity
+from Test.test_entity import TestEntityCollection
+from Test.test_configuration import TestConfig
 
-
-class AbstractParserTest(unittest.TestCase):
+def my_suite():
     """
-    Helps to test Abstract Parser Class
+    Test Suite
     """
-    @classmethod
-    def setUpClass(cls):
-        """
-        Helps to initialize the config for all method
-        :return: None
-        """
-        cls.test_config = Config()
-        cls.test_config.path = "testpath.json"
-        cls.test_config.data_type = "JSON"
-        cls.test_config.entity_collection = "Students"
-        cls.test_config.base_field = "Name"
-        cls.test_config.computable_fields = ['Science','Science+Math','Science*Math','Science/Math','Science-Math']
+    suite = unittest.TestSuite()
+    runner = unittest.TextTestRunner()
+    suite.addTest(unittest.makeSuite(AbstractParserTest))
+    suite.addTest(unittest.makeSuite(JsonParserTest))
+    suite.addTest(unittest.makeSuite(XMLParserTest))
+    suite.addTest(unittest.makeSuite(CSVParserTest))
+    suite.addTest(unittest.makeSuite(DataManagerFactoryTest))
+    suite.addTest(unittest.makeSuite(TestEntity))
+    suite.addTest(unittest.makeSuite(TestEntityCollection))
+    suite.addTest(unittest.makeSuite(TestConfig))
+    print(runner.run(suite))
 
-    def setUp(self):
-        """
-        Helps to initialize parser object and entity object for each method
-        :return: None
-        """
-        self.test_parser = Parser(self.test_config)
-        self.test_entity = Entity("test")
+if __name__ == '__main__':
+    my_suite()
 
-    def test_expression_parsing_fields(self):
-        """
-        Helps to test: -
-        1. get_computable_fields method
-        2. get_parsed_expression method
-        3. __validate_and_convert_operand__ method indirectly
-        :return: None
-        """
-        fields = self.test_parser.get_computable_fields()
-        self.assertEqual(len(fields), 1, "Test Failed")
 
-        parsed_expression_list = self.test_parser.get_parsed_expression()
-        self.assertEqual(len(parsed_expression_list), 4, "Test Failed")
-        self.assertEqual(parsed_expression_list[0][2],"+","Test Failed")
 
-        with self.assertRaises(ValueError):
-            self.test_parser.evaluate_expression("five", "ten", "Div", "/", self.test_entity)
 
-    def test_evaluating_fields(self):
-        """
-        Helps to test evaluate_expression methods with different expressions
-        :return: None
-        """
-        self.test_parser.evaluate_expression("5", "10", "Total", "+", self.test_entity)
-        self.test_parser.evaluate_expression("5", "10", "Product", "*", self.test_entity)
-        self.test_parser.evaluate_expression("5", "10", "Diff", "-", self.test_entity)
-        self.test_parser.evaluate_expression("5", "10", "Div", "/", self.test_entity)
-
-        self.assertEqual(self.test_entity.field_value_pairs.get("Total"), 15,"Test Failed")
-        self.assertEqual(self.test_entity.field_value_pairs.get("Product"), 50,"Test Failed")
-        self.assertEqual(self.test_entity.field_value_pairs.get("Diff"), -5, "Test Failed")
-        self.assertEqual(self.test_entity.field_value_pairs.get("Div"), 0.5, "Test Failed")
-
-    def tearDown(self):
-        """
-        Helps to delete test_entity and test_parser
-        :return: None
-        """
-        del self.test_entity
-        del self.test_parser
-
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Helps to delete test config object
-        :return:
-        """
-        del cls.test_config
