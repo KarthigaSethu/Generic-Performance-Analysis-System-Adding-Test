@@ -1,11 +1,10 @@
 import unittest
 from unittest.mock import patch
 from data_processor.configuration import Config
-from data_transformer.custom_exception import UnsupportedDataType
 import shutil
 import os
 import json
-
+from data_transformer.custom_exception import UnsupportedDataType
 
 class TestConfig(unittest.TestCase):
     """
@@ -101,4 +100,4 @@ class TestConfig(unittest.TestCase):
         """
         shutil.rmtree(cls.test_dir)
 
-# unittest.main(argv=[''], verbosity=2, exit=False)
+unittest.main(argv=[''], verbosity=2, exit=False)
