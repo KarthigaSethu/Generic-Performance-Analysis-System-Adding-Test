@@ -1,6 +1,6 @@
 import unittest
-from entity import Entity
-from entity import EntityCollection
+from data_processor.entity import Entity
+from data_processor.entity import EntityCollection
 
 class TestEntity(unittest.TestCase):
     """
@@ -162,5 +162,5 @@ class TestEntityCollection(unittest.TestCase):
         del cls.entity2
         del cls.entity3
 
-if __name__ == '__main__':
-    unittest.main(argv=[''], verbosity=2, exit=False)
+#if __name__ == '__main__':
+#    unittest.main(argv=[''], verbosity=2, exit=False)

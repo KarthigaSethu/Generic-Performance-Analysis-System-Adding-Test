@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from configuration import Config 
+from data_processor.configuration import Config
 import shutil
 import os
 import json
@@ -98,4 +98,4 @@ class TestConfig(unittest.TestCase):
         """
         shutil.rmtree(cls.test_dir)
 
-unittest.main(argv=[''], verbosity=2, exit=False)
+#unittest.main(argv=[''], verbosity=2, exit=False)
