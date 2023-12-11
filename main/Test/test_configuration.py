@@ -5,12 +5,10 @@ import shutil
 import os
 import json
 from data_transformer.custom_exception import UnsupportedDataType
-
 class TestConfig(unittest.TestCase):
     """
     Test case for class configuration.
     """
-
     @classmethod
     def setUpClass(cls):
         """
@@ -18,7 +16,6 @@ class TestConfig(unittest.TestCase):
         """
         cls.test_dir = os.path.join(os.getcwd(), 'test_config')
         os.makedirs(cls.test_dir, exist_ok=True)
-        
     def setUp(self):
         """
         Create a temporary config file for testing
@@ -32,39 +29,27 @@ class TestConfig(unittest.TestCase):
                 'base_field': 'id',
                 'computable_fields': ['salary', 'bonus']
             }, json_file)
-        
     @patch('builtins.input', side_effect=['y'])
     def test_is_valid_config_valid_file(self, mock_input):
         """
         Initialize Config with the temporary config file
         """
+        # valid file
         config = Config()
+        self.assertIsNotNone(config)
         self.assertTrue(config.is_valid_config())
-    
-    @patch('builtins.input', side_effect=['y'])
-    def test_is_valid_config_invalid_file_type(self, mock_input):
-        """
-        Create a temporary config file with an invalid file type (.txt)
-        """
+        # invalid file
         config_file_invalid_type = os.path.join(self.test_dir, 'config_invalid_type.txt')
         with open(config_file_invalid_type, 'w') as txt_file:
             txt_file.write('This is an invalid file content.')
-
         # Initialize Config with the temporary config file
         config = Config()
         config.path = config_file_invalid_type
-
         # Assert that is_valid_config returns False for an invalid file type
         with self.assertRaises(UnsupportedDataType):
             config.is_valid_config()
-    
-    def test_read_config_success(self):
-        """
-        Initialize Config with the temporary config file
-        """
-        config = Config()
         self.assertIsNotNone(config.read_config())
-    
+
     def test_write_config(self):
         """
         Read the written config file and check if the values match
@@ -75,29 +60,23 @@ class TestConfig(unittest.TestCase):
         config.base_field = 'id'
         config.computable_fields = ['salary', 'bonus']
         config.path = os.path.join(self.test_dir, 'config.json')
-
         # Create the directory if it doesn't exist
         os.makedirs(os.path.dirname(config.path), exist_ok=True)
         config.write_config()
-
         with open(config.path, 'r') as written_file:
             written_data = json.load(written_file)
             self.assertEqual(written_data['data_type'], 'CSV')
             self.assertEqual(written_data['entity_collection'], 'employees')
             self.assertEqual(written_data['base_field'], 'id')
             self.assertEqual(written_data['computable_fields'], ['salary', 'bonus'])
-
     def tearDown(self):
         """
         Remove the temporary config file after each test
         """
         os.remove(self.config_file)
-        
     @classmethod
     def tearDownClass(cls):
         """
         Remove the temporary directory after testing
         """
         shutil.rmtree(cls.test_dir)
-
-unittest.main(argv=[''], verbosity=2, exit=False)
