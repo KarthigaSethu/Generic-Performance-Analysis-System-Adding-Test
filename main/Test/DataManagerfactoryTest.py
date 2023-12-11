@@ -1,91 +1,104 @@
 import unittest
+from unittest.mock import patch
 from data_processor.configuration import Config
-from data_transformer.json_parser import JsonParser
-from unittest import mock
-from data_processor.entity import EntityCollection as EC
-from data_transformer.data_manager_factory import DataManagerFactory as DMF
+from data_transformer.custom_exception import UnsupportedDataType
+import shutil
+import os
+import json
 
-class DataManagerFactoryTest(unittest.TestCase):
+
+class TestConfig(unittest.TestCase):
+    """
+    Test case for class configuration.
+    """
+
     @classmethod
     def setUpClass(cls):
         """
-        Helps to initialize the json data and config for all method
-        :return: None
+        Create a temporary directory for testing
         """
-        cls.mockentitycollection = EC()
-        cls.mockentitycollection.add("Kalpana", {"science":90,"english":85})
-
-        cls.test_config = Config()
-        cls.test_config.path = "testpath.csv"
-        cls.test_config.data_type = "CSV"
-        cls.test_config.entity_collection = "student"
-        cls.test_config.base_field = "name"
-        cls.test_config.computable_fields = ['english','english']
+        cls.test_dir = os.path.join(os.getcwd(), 'test_config')
+        os.makedirs(cls.test_dir, exist_ok=True)
 
     def setUp(self):
         """
-        Helps to initialize parser object and entity object for each method
-        :return: None
+        Create a temporary config file for testing
         """
-        self.test_config.entity_collection = "student"
-        self.test_config.computable_fields = ['english']
-        self.data_manager_factory = DMF(self.test_config)
-        self.test_config.data_type = "CSV"
-        self.mockentitycollection.add("Kalpana", {"science": 90, "english": 85})
+        self.config_file = os.path.join(self.test_dir, 'config.json')
+        with open(self.config_file, 'w') as json_file:
+            json.dump({
+                'path': 'example.csv',
+                'data_type': 'CSV',
+                'entity_collection': 'employees',
+                'base_field': 'id',
+                'computable_fields': ['salary', 'bonus']
+            }, json_file)
 
-    def test_call_parser(self):
+    @patch('builtins.input', side_effect=['y'])
+    def test_is_valid_config_valid_file(self, mock_input):
         """
-        Helps to test:-
-        1) Non Empty Entity Collection scenario
-        2) Non Empty Entity with empty field scenario
-        :return:
+        Initialize Config with the temporary config file
         """
-        with mock.patch("data_transformer.csv_parser.CsvParser.parse") as mock_parse:
-            mock_parse.return_value = self.mockentitycollection
-            entityCollection = self.data_manager_factory.call_parser()
-            self.assertTrue(len(entityCollection.items) > 0, "Test Failed")
-            self.assertTrue(len(entityCollection.items[0].field_value_pairs) > 0, "Test Failed")
-            self.assertTrue(entityCollection.items[0].field_value_pairs["english"] > 0, "Test Failed")
-            self.assertEqual(len(entityCollection.items[0].field_value_pairs), 2,  "Test Failed")
+        config = Config()
+        self.assertTrue(config.is_valid_config())
 
-    """
-        Helps to test:-
-        1) Empty Entity Collection
-        2) with unknown parser
-        :return:
-    """
-    def test_register_and_is_empty(self):
+    @patch('builtins.input', side_effect=['y'])
+    def test_is_valid_config_invalid_file_type(self, mock_input):
+        """
+        Create a temporary config file with an invalid file type (.txt)
+        """
+        config_file_invalid_type = os.path.join(self.test_dir, 'config_invalid_type.txt')
+        with open(config_file_invalid_type, 'w') as txt_file:
+            txt_file.write('This is an invalid file content.')
 
-        self.test_config.data_type = "pdf"
-        entityCollection = self.data_manager_factory.call_parser()
+        # Initialize Config with the temporary config file
+        config = Config()
+        config.path = config_file_invalid_type
 
-        self.setUp()
-        with self.assertRaises(Exception):
-            self.mockentitycollection.items = []
-            with mock.patch("data_transformer.csv_parser.CsvParser.parse") as mock_parse:
-                mock_parse.return_value = self.mockentitycollection
-                self.data_manager_factory.call_parser()
-        self.setUp()
-        with self.assertRaises(Exception):
-            self.mockentitycollection.items = []
-            self.mockentitycollection.add("Kalpana",{})
-            with mock.patch("data_transformer.csv_parser.CsvParser.parse") as mock_parse:
-                mock_parse.return_value = self.mockentitycollection
-                self.data_manager_factory.call_parser()
-        assert (self.data_manager_factory.parsers, 3, "test failed")
-        assert (self.data_manager_factory.parsers, JsonParser, "test failed")
+        # Assert that is_valid_config returns False for an invalid file type
+        with self.assertRaises(UnsupportedDataType):
+            self.assertFalse(config.is_valid_config())
+
+    def test_read_config_success(self):
+        """
+        Initialize Config with the temporary config file
+        """
+        config = Config()
+        self.assertIsNotNone(config.read_config())
+
+    def test_write_config(self):
+        """
+        Read the written config file and check if the values match
+        """
+        config = Config()
+        config.data_type = 'CSV'
+        config.entity_collection = 'employees'
+        config.base_field = 'id'
+        config.computable_fields = ['salary', 'bonus']
+        config.path = os.path.join(self.test_dir, 'config.json')
+
+        # Create the directory if it doesn't exist
+        os.makedirs(os.path.dirname(config.path), exist_ok=True)
+        config.write_config()
+
+        with open(config.path, 'r') as written_file:
+            written_data = json.load(written_file)
+            self.assertEqual(written_data['data_type'], 'CSV')
+            self.assertEqual(written_data['entity_collection'], 'employees')
+            self.assertEqual(written_data['base_field'], 'id')
+            self.assertEqual(written_data['computable_fields'], ['salary', 'bonus'])
+
     def tearDown(self):
         """
-        Helps to delete test_parser
-        :return: None
+        Remove the temporary config file after each test
         """
-        del self.data_manager_factory
+        os.remove(self.config_file)
 
     @classmethod
     def tearDownClass(cls):
         """
-        Helps to delete test config object and mock entitycollection data
-        :return:
+        Remove the temporary directory after testing
         """
-        del cls.test_config
-        del cls.mockentitycollection
+        shutil.rmtree(cls.test_dir)
+
+# unittest.main(argv=[''], verbosity=2, exit=False)
