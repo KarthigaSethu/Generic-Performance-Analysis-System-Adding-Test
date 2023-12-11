@@ -4,6 +4,7 @@ from data_processor.configuration import Config
 import shutil
 import os
 import json
+from data_transformer.custom_exception import UnsupportedDataType
 
 class TestConfig(unittest.TestCase):
     """
@@ -54,7 +55,8 @@ class TestConfig(unittest.TestCase):
         config.path = config_file_invalid_type
 
         # Assert that is_valid_config returns False for an invalid file type
-        self.assertFalse(config.is_valid_config())
+        with self.assertRaises(UnsupportedDataType):
+            self.assertFalse(config.is_valid_config())
     
     def test_read_config_success(self):
         """
@@ -98,4 +100,4 @@ class TestConfig(unittest.TestCase):
         """
         shutil.rmtree(cls.test_dir)
 
-#unittest.main(argv=[''], verbosity=2, exit=False)
+unittest.main(argv=[''], verbosity=2, exit=False)

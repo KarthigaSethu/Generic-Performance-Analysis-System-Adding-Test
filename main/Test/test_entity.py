@@ -162,5 +162,5 @@ class TestEntityCollection(unittest.TestCase):
         del cls.entity2
         del cls.entity3
 
-#if __name__ == '__main__':
-#    unittest.main(argv=[''], verbosity=2, exit=False)
+if __name__ == '__main__':
+    unittest.main(argv=[''], verbosity=2, exit=False)
