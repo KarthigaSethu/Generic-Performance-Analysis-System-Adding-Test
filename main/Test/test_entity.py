@@ -54,81 +54,99 @@ class TestEntity(unittest.TestCase):
         """
         del cls.shared_resource
         
-
 class TestEntityCollection(unittest.TestCase):
-    """
-    Test case for class entity collection.
-    """
-    
+
     @classmethod
     def setUpClass(cls):
         """
         Set up resources or initialize variables shared among all tests in this class
         """
-        cls.shared_collection = EntityCollection()
-
+        cls.entity1 = Entity("1", {"score": 10})
+        cls.entity2 = Entity("2", {"score": 20})
+        cls.entity3 = Entity("3", {"score": 30})
+        
     def setUp(self):
         """
-        Code to set up resources or initialize variables specific to each test in this class
+        Set up resources or initialize variables specific to each test in this class
         """
-        self.collection = EntityCollection()
-
+        self.collection = EntityCollection(items=[self.entity1, self.entity2, self.entity3])
+        self.single_value_collection = EntityCollection(items=[self.entity1])
+        self.empty_collection = EntityCollection()
+        
     def test_add_entity(self):
         """
-        Test to check that an entity is added to the collection and the returned entity refer to the same underlying object.
+        Test to check that an entity is added to the collection
         """
-        entity = self.collection.add_entity("1")
-        self.assertEqual(len(self.collection.items), 1)
-        self.assertIs(self.collection.items[0], entity)
-
+        entity = self.collection.add_entity("4")
+        self.assertEqual(len(self.collection.items), 4)
+        self.assertIs(self.collection.items[-1], entity)
+        
     def test_compute_mean(self):
         """
-        Test to check the average from a computable field within a collection
+        Test to check the average from a computable field within a collection is 3 cases:
+        1. With a collection containing unique values
+        2. With a collection containing only one value
+        3. With an empty collection
         """
-        self.collection.add("1", {"score": 10})
-        self.collection.add("2", {"score": 20})
-        self.assertEqual(self.collection.compute_mean("score"), 15.0)
+        self.assertEqual(self.collection.compute_mean("score"), 20.0)
+        self.assertIsNone(self.empty_collection.compute_mean("score"))
+        self.assertEqual(self.single_value_collection.compute_mean("score"), 10.0)
 
     def test_compute_mode(self):
         """
-        Test to check the mode from a computable field within a collection
+        Test to check the mode from a computable field within a collection is 3 cases:
+        1. With a collection containing unique values
+        2. With a collection containing only one value
+        3. With an empty collection
         """
-        self.collection.add("1", {"score": 10})
-        self.collection.add("2", {"score": 20})
-        self.assertEqual(self.collection.compute_mode("score"), 10)
+        self.assertIsNone(self.collection.compute_mode("score"))
+        self.assertIsNone(self.single_value_collection.compute_mode("score"))
+        self.assertIsNone(self.empty_collection.compute_mode("score"))
 
     def test_compute_median(self):
         """
-        Test to check median from a computable field within a collection
+        Test to check the median from a computable field within a collection is 3 cases:
+        1. With a collection containing unique values
+        2. With a collection containing only one value
+        3. With an empty collection
         """
-        self.collection.add("1", {"score": 10})
-        self.collection.add("2", {"score": 20})
-        self.assertEqual(self.collection.compute_median("score"), 15.0)
-
+        self.assertEqual(self.collection.compute_median("score"), 20.0)
+        self.assertIsNone(self.empty_collection.compute_median("score"))
+        self.assertEqual(self.single_value_collection.compute_median("score"), 10.0)
+        
     def test_compute_min(self):
         """
-        Test to check minimum from a computable field within a collection
+        Test to check the min from a computable field within a collection is 3 cases:
+        1. With a collection containing unique values
+        2. With a collection containing only one value
+        3. With an empty collection
         """
-        self.collection.add("1", {"score": 10})
-        self.collection.add("2", {"score": 20})
         self.assertEqual(self.collection.compute_min("score"), 10)
-
+        self.assertIsNone(self.empty_collection.compute_min("score"))
+        self.assertEqual(self.single_value_collection.compute_min("score"), 10)
+        
     def test_compute_max(self):
         """
-        Test to check the maximum from a computable field within a collection
+        Test to check the max from a computable field within a collection is 3 cases:
+        1. With a collection containing unique values
+        2. With a collection containing only one value
+        3. With an empty collection
         """
-        self.collection.add("1", {"score": 10})
-        self.collection.add("2", {"score": 20})
-        self.assertEqual(self.collection.compute_max("score"), 20)
+        self.assertEqual(self.collection.compute_max("score"), 30)
+        self.assertIsNone(self.empty_collection.compute_max("score"))
+        self.assertEqual(self.single_value_collection.compute_max("score"), 10)
 
     def test_compute_count(self):
         """
-        Test to check the number of entities within a collection
+        Test to check the count from a computable field within a collection is 3 cases:
+        1. With a collection containing unique values
+        2. With a collection containing only one value
+        3. With an empty collection
         """
-        self.collection.add("1", {"score": 10})
-        self.collection.add("2", {"score": 20})
-        self.assertEqual(self.collection.compute_count("score"), 2)
-                
+        self.assertEqual(self.collection.compute_count("score"), 3)
+        self.assertIsNone(self.empty_collection.compute_count("score"))
+        self.assertEqual(self.single_value_collection.compute_count("score"), 1)
+        
     def tearDown(self):
         """
         Clean up resources after each test in this class
@@ -140,7 +158,9 @@ class TestEntityCollection(unittest.TestCase):
         """
         Clean up resources after all tests in this class have run
         """
-        del cls.shared_collection
+        del cls.entity1
+        del cls.entity2
+        del cls.entity3
 
 if __name__ == '__main__':
     unittest.main(argv=[''], verbosity=2, exit=False)
