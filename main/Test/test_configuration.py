@@ -56,7 +56,7 @@ class TestConfig(unittest.TestCase):
 
         # Assert that is_valid_config returns False for an invalid file type
         with self.assertRaises(UnsupportedDataType):
-            self.assertFalse(config.is_valid_config())
+            config.is_valid_config()
     
     def test_read_config_success(self):
         """
