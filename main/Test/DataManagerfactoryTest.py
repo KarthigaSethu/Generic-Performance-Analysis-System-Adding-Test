@@ -100,4 +100,4 @@ class TestConfig(unittest.TestCase):
         """
         shutil.rmtree(cls.test_dir)
 
-unittest.main(argv=[''], verbosity=2, exit=False)
+#unittest.main(argv=[''], verbosity=2, exit=False)
